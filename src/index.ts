@@ -94,9 +94,17 @@ function validateConfig(config: unknown): LoaderConfig {
   }
 
   const deprecatedConfig = config as DeprecatedLoaderConfig;
-  if (deprecatedConfig.urls) {
+  const urls = deprecatedConfig.urls;
+  if (urls) {
     console.warn(errorMessages.deprecation);
-    return { paths: { vs: deprecatedConfig.urls.monacoBase } };
+    const { urls: _, ...restConfig } = config as DeprecatedLoaderConfig & LoaderConfig;
+    return {
+      ...restConfig,
+      paths: {
+        ...restConfig.paths,
+        vs: urls.monacoBase,
+      },
+    };
   }
 
   return config as LoaderConfig;
