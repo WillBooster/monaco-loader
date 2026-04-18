@@ -56,6 +56,8 @@ This package tracks the latest maintained stack used by this repository:
 - `monaco-editor` 0.55.1
 - Next.js 16 with React 19 for the integration app
 
+The `monaco-editor` peer dependency is pinned to the supported version so package managers surface unsupported upgrades.
+
 ### Introduction
 
 The library exports types and the utility called `loader`, the last one has two methods
