@@ -1,4 +1,6 @@
-# @monaco-editor/loader &middot; [![monthly downloads](https://img.shields.io/npm/dm/@monaco-editor/loader)](https://www.npmjs.com/package/@monaco-editor/loader) [![gitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/suren-atoyan/monaco-loader/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/@monaco-editor/loader.svg?style=flat)](https://www.npmjs.com/package/@monaco-editor/loader) [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/suren-atoyan/monaco-loader/pulls)
+# @willbooster/monaco-loader &middot; [![monthly downloads](https://img.shields.io/npm/dm/@willbooster/monaco-loader)](https://www.npmjs.com/package/@willbooster/monaco-loader) [![gitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/WillBooster/monaco-loader/blob/main/LICENSE) [![npm version](https://img.shields.io/npm/v/@willbooster/monaco-loader.svg?style=flat)](https://www.npmjs.com/package/@willbooster/monaco-loader)
+
+[![Test](https://github.com/WillBooster/monaco-loader/actions/workflows/test.yml/badge.svg)](https://github.com/WillBooster/monaco-loader/actions/workflows/test.yml)
 
 The utility to easy setup `monaco-editor` into your browser
 
@@ -18,25 +20,25 @@ Monaco editor provides a script called `loader`, which itself provides tooling t
 
 #### Contents
 
-* [Installation](#installation)
-* [Introduction](#introduction)
-* [Usage](#usage)
-  * [.config](#config)
-  * [.init](#init)
-* [Notes](#notes)
-  * [For `electron` users](#for-electron-users)
-  * [For `Next.js` users](#for-nextjs-users)
+- [Installation](#installation)
+- [Introduction](#introduction)
+- [Usage](#usage)
+  - [.config](#config)
+  - [.init](#init)
+- [Notes](#notes)
+  - [For `electron` users](#for-electron-users)
+  - [For `Next.js` users](#for-nextjs-users)
 
 ### Installation
 
 ```bash
-npm install @monaco-editor/loader
+npm install @willbooster/monaco-loader
 ```
 
 or
 
 ```bash
-yarn add @monaco-editor/loader
+yarn add @willbooster/monaco-loader
 ```
 
 NOTE: For TypeScript type definitions, this package uses the [monaco-editor](https://www.npmjs.com/package/monaco-editor) package as a peer dependency. So, if you need types and don't already have the [monaco-editor](https://www.npmjs.com/package/monaco-editor) package installed, you will need to do so.
@@ -45,13 +47,13 @@ NOTE: For TypeScript type definitions, this package uses the [monaco-editor](htt
 
 The library exports types and the utility called `loader`, the last one has two methods
 
-* [.config](#config)
-* [.init](#init)
+- [.config](#config)
+- [.init](#init)
 
 ### Usage
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 
 loader.init().then(monaco => {
   monaco.editor.create(/* editor container, e.g. document.body */, {
@@ -68,7 +70,7 @@ loader.init().then(monaco => {
 By using the `.config` method we can configure the monaco loader. By default all sources come from CDN, you can change that behavior and load them from wherever you want
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 
 // you can change the source of the monaco files
 loader.config({ paths: { vs: '...' } });
@@ -81,14 +83,16 @@ loader.config({
   paths: {
     vs: '...',
   },
-  'vs/nls' : {
+  'vs/nls': {
     availableLanguages: {
       '*': 'de',
     },
   },
 });
 
-loader.init().then(monaco => { /* ... */ });
+loader.init().then((monaco) => {
+  /* ... */
+});
 ```
 
 [codesandbox](https://codesandbox.io/s/config-o6zn6)
@@ -96,12 +100,14 @@ loader.init().then(monaco => { /* ... */ });
 #### Configure the loader to load the monaco as an npm package
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 import * as monaco from 'monaco-editor';
 
 loader.config({ monaco });
 
-loader.init().then(monacoInstance => { /* ... */ });
+loader.init().then((monacoInstance) => {
+  /* ... */
+});
 ```
 
 [codesandbox](https://codesandbox.io/s/npm-gswrvh)
@@ -111,9 +117,9 @@ loader.init().then(monacoInstance => { /* ... */ });
 The `.init` method handles the initialization process. It returns the monaco instance, wrapped with cancelable promise
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 
-loader.init().then(monaco => {
+loader.init().then((monaco) => {
   console.log('Here is the monaco instance', monaco);
 });
 ```
@@ -121,11 +127,11 @@ loader.init().then(monaco => {
 [codesandbox](https://codesandbox.io/s/init-q2ipt)
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 
 const cancelable = loader.init();
 
-cancelable.then(monaco => {
+cancelable.then((monaco) => {
   console.log('You will not see it, as it is canceled');
 });
 
@@ -140,11 +146,11 @@ cancelable.cancel();
 
 In general it works fine with electron, but there are several cases that developers usually face to and sometimes it can be confusing. Here they are:
 
-1) **Download process fails** or if you use @monaco-editor/react **You see loading screen stuck**
-Usually, it's because your environment doesn't allow you to load external sources. By default, it loads monaco sources from CDN. You can see the [default configuration](https://github.com/suren-atoyan/monaco-loader/blob/master/src/config/index.js#L3). But sure you can change that behavior; the library is fully configurable. Read about it [here](https://github.com/suren-atoyan/monaco-loader#config). So, if you want to download it from your local files, you can do it like this:
+1. **Download process fails** or if you use @monaco-editor/react **You see loading screen stuck**
+   Usually, it's because your environment doesn't allow you to load external sources. By default, it loads monaco sources from CDN. You can see the [default configuration](https://github.com/WillBooster/monaco-loader/blob/main/src/index.ts). But sure you can change that behavior; the library is fully configurable. Read about it [here](#config). So, if you want to download it from your local files, you can do it like this:
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 
 loader.config({ paths: { vs: '../path-to-monaco' } });
 ```
@@ -152,35 +158,33 @@ loader.config({ paths: { vs: '../path-to-monaco' } });
 or, if you want to use it as an npm package, you can do it like this:
 
 ```javascript
-import loader from '@monaco-editor/loader';
+import loader from '@willbooster/monaco-loader';
 import * as monaco from 'monaco-editor';
 
 loader.config({ monaco });
 
-loader.init().then(monacoInstance => { /* ... */ });
+loader.init().then((monacoInstance) => {
+  /* ... */
+});
 ```
 
-2) **Based on your electron environment it can be required to have an absolute URL**
-The utility function taken from [here](https://github.com/microsoft/monaco-editor-samples/blob/master/electron-amd-nodeIntegration/electron-index.html) can help you to achieve that. Let's imagine you have `monaco-editor` package installed and you want to load monaco from the `node_modules` rather than from CDN: in that case, you can write something like this:
+2. **Based on your electron environment it can be required to have an absolute URL**
+   The utility function taken from [here](https://github.com/microsoft/monaco-editor-samples/blob/master/electron-amd-nodeIntegration/electron-index.html) can help you to achieve that. Let's imagine you have `monaco-editor` package installed and you want to load monaco from the `node_modules` rather than from CDN: in that case, you can write something like this:
 
 ```javascript
 function ensureFirstBackSlash(str) {
-    return str.length > 0 && str.charAt(0) !== '/'
-        ? '/' + str
-        : str;
+  return str.length > 0 && str.charAt(0) !== '/' ? '/' + str : str;
 }
 
 function uriFromPath(_path) {
-    const pathName = path.resolve(_path).replace(/\\/g, '/');
-    return encodeURI('file://' + ensureFirstBackSlash(pathName));
+  const pathName = path.resolve(_path).replace(/\\/g, '/');
+  return encodeURI('file://' + ensureFirstBackSlash(pathName));
 }
 
 loader.config({
   paths: {
-    vs: uriFromPath(
-      path.join(__dirname, '../node_modules/monaco-editor/min/vs')
-    )
-  }
+    vs: uriFromPath(path.join(__dirname, '../node_modules/monaco-editor/min/vs')),
+  },
 });
 ```
 

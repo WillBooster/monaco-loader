@@ -2,50 +2,76 @@
   "name": "@willbooster/monaco-loader",
   "version": "1.7.0",
   "description": "the library aims to setup monaco editor into your browser",
-  "main": "lib/cjs/index.js",
-  "module": "lib/es/index.js",
-  "unpkg": "lib/umd/monaco-loader.min.js",
-  "jsdelivr": "lib/umd/monaco-loader.min.js",
-  "types": "lib/types.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/suren-atoyan/monaco-loader.git"
-  },
-  "homepage": "https://github.com/suren-atoyan/monaco-loader.git",
-  "author": "Suren Atoyan <contact@surenatoyan.com>",
-  "license": "MIT",
-  "scripts": {
-    "test": "jest",
-    "test-watch": "npm run build && jest --watch",
-    "coverage": "jest --collect-coverage",
-    "lint": "npx eslint src",
-    "prepublishOnly": "npm test && npm run lint && npm run build",
-    "build": "rollup -c && cp ./src/types.d.ts ./lib/",
-    "prepare": "husky"
-  },
   "keywords": [
-    "monaco",
     "editor",
     "loader",
-    "monaco-editor",
-    "monaco editor"
+    "monaco",
+    "monaco editor",
+    "monaco-editor"
   ],
-  "devDependencies": {
-    "@babel/core": "^7.25.0",
-    "@babel/preset-env": "^7.25.0",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-commonjs": "^28.0.0",
-    "@rollup/plugin-node-resolve": "^15.3.0",
-    "@rollup/plugin-replace": "^6.0.1",
-    "@rollup/plugin-terser": "^0.4.4",
-    "babel-jest": "^29.7.0",
-    "babel-loader": "^9.2.1",
-    "eslint": "^9.14.0",
-    "husky": "^9.1.6",
-    "jest": "^29.7.0",
-    "rollup": "^4.24.0"
+  "homepage": "https://github.com/WillBooster/monaco-loader",
+  "license": "MIT",
+  "author": "WillBooster Inc.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WillBooster/monaco-loader.git"
   },
-  "dependencies": {
-    "state-local": "^1.0.6"
-  }
+  "files": [
+    "dist/"
+  ],
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "build-ts lib",
+    "check-all-for-ai": "yarn check-for-ai && yarn test",
+    "check-for-ai": "yarn install > /dev/null && yarn format > /dev/null 2> /dev/null || true && yarn lint-fix --quiet",
+    "cleanup": "yarn format && yarn lint-fix",
+    "format": "sort-package-json && yarn format-code && yarn prettify",
+    "format-code": "oxfmt --write --no-error-on-unmatched-pattern .",
+    "lint": "oxlint --no-error-on-unmatched-pattern .",
+    "lint-fix": "yarn lint --fix",
+    "prepare": "lefthook install || true",
+    "prettify": "prettier --cache --color --no-error-on-unmatched-pattern --write \"**/{.*/,}*.{java}\" \"!**/test{-,/}fixtures/**\" || true",
+    "test": "vitest",
+    "typecheck": "tsgo --noEmit"
+  },
+  "devDependencies": {
+    "@tsconfig/node-lts": "24.0.0",
+    "@tsconfig/node-ts": "23.6.4",
+    "@types/node": "25.6.0",
+    "@typescript/native-preview": "7.0.0-dev.20260417.1",
+    "@willbooster/oxfmt-config": "1.2.1",
+    "@willbooster/oxlint-config": "1.4.4",
+    "@willbooster/prettier-config": "10.4.0",
+    "build-ts": "17.1.0",
+    "conventional-changelog-conventionalcommits": "9.3.1",
+    "jsdom": "29.0.2",
+    "lefthook": "2.1.5",
+    "oxfmt": "0.45.0",
+    "oxlint": "1.60.0",
+    "oxlint-tsgolint": "0.21.0",
+    "prettier": "3.8.2",
+    "prettier-plugin-java": "2.8.1",
+    "semantic-release": "25.0.3",
+    "sort-package-json": "3.6.1",
+    "vite": "8.0.8",
+    "vitest": "4.1.4"
+  },
+  "prettier": "@willbooster/prettier-config",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "yarn@4.14.1"
 }
