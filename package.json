@@ -1,5 +1,5 @@
 {
-  "name": "@monaco-editor/loader",
+  "name": "@willbooster/monaco-loader",
   "version": "1.7.0",
   "description": "the library aims to setup monaco editor into your browser",
   "main": "lib/cjs/index.js",
