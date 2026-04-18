@@ -2,7 +2,10 @@
 
 [![Test](https://github.com/WillBooster/monaco-loader/actions/workflows/test.yml/badge.svg)](https://github.com/WillBooster/monaco-loader/actions/workflows/test.yml)
 
-The utility to easy setup `monaco-editor` into your browser
+The utility to easily set up `monaco-editor` in your browser.
+
+This package is a fork of [`@monaco-editor/loader`](https://github.com/suren-atoyan/monaco-loader), published as `@willbooster/monaco-loader`.
+It keeps the same loader API while updating the package metadata, build setup, and maintenance ownership for this fork.
 
 ## Synopsis
 
@@ -203,3 +206,5 @@ And if you use `monaco` with `Next.js` and have faced an issue different than th
 ## License
 
 [MIT](./LICENSE)
+
+This fork preserves the original MIT license and upstream copyright notice.
