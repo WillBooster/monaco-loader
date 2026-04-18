@@ -3930,10 +3930,7 @@ __metadata:
     vite: "npm:8.0.8"
     vitest: "npm:4.1.4"
   peerDependencies:
-    monaco-editor: "*"
-  peerDependenciesMeta:
-    monaco-editor:
-      optional: true
+    monaco-editor: ^0.55.1
   languageName: unknown
   linkType: soft
 
