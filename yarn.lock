@@ -3877,7 +3877,7 @@ __metadata:
     "@typescript/native-preview": "npm:7.0.0-dev.20260418.1"
     "@willbooster/oxfmt-config": "npm:1.2.1"
     "@willbooster/oxlint-config": "npm:1.4.4"
-    build-ts: "npm:17.1.4"
+    build-ts: "npm:17.1.6"
     conventional-changelog-conventionalcommits: "npm:9.3.1"
     jsdom: "npm:29.0.2"
     lefthook: "npm:2.1.5"
@@ -4256,9 +4256,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"build-ts@npm:17.1.4":
-  version: 17.1.4
-  resolution: "build-ts@npm:17.1.4"
+"build-ts@npm:17.1.6":
+  version: 17.1.6
+  resolution: "build-ts@npm:17.1.6"
   dependencies:
     "@babel/core": "npm:7.29.0"
     "@babel/plugin-proposal-decorators": "npm:7.29.0"
@@ -4287,7 +4287,7 @@ __metadata:
     rollup: "npm:4.60.1"
     rollup-plugin-analyzer: "npm:4.0.0"
     rollup-plugin-keep-import: "npm:1.0.3"
-    rollup-plugin-node-externals: "npm:8.1.2"
+    rollup-plugin-node-externals: "npm:9.0.0"
     rollup-plugin-preserve-directives: "npm:0.4.0"
     rollup-plugin-string: "npm:3.0.0"
     signal-exit: "npm:4.1.0"
@@ -4295,7 +4295,7 @@ __metadata:
     yargs: "npm:18.0.0"
   bin:
     build-ts: bin/index.js
-  checksum: 10c0/42f25a9cb74d79983f71bf00e2b9ef7ac316d403d609657cfb76e3631c315f6a692dc5cf0cb1e6b4fac56372277ff59a0afe2570813d24e96b36546318a58d3a
+  checksum: 10c0/13fc6a574f4170481c1e64283f4b7fe796e3952098adedec5896c96fd01d5a396f16e07185dd02f5f3ac7e8917f0b4234852e3bf42a825e2dc7f1bee0d3f8e19
   languageName: node
   linkType: hard
 
@@ -7951,12 +7951,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-node-externals@npm:8.1.2":
-  version: 8.1.2
-  resolution: "rollup-plugin-node-externals@npm:8.1.2"
+"rollup-plugin-node-externals@npm:9.0.0":
+  version: 9.0.0
+  resolution: "rollup-plugin-node-externals@npm:9.0.0"
   peerDependencies:
     rollup: ^4.0.0
-  checksum: 10c0/ea37fb84e562c311b473f354e7ff98f8d19caf7c57b526ef6a29f1fab05880d291d2edd3c482dfedd27150a4133ebe914723ac9dc3165ce679ec00146a97df06
+    vite: ">=5.0.0"
+  peerDependenciesMeta:
+    rollup:
+      optional: true
+    vite:
+      optional: true
+  checksum: 10c0/041175999540985dcda9b3f0ad4d073b889d266e3dac4a0a825d5d7acb9b77c60bf3bf6ee0e22ec313af9f85a98f657652a3818d96ee8e4cc4f64c848b504ea1
   languageName: node
   linkType: hard
 
