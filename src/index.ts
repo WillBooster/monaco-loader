@@ -16,19 +16,11 @@ export interface CancelablePromise<T> extends Promise<T> {
   cancel: () => void;
 }
 
-interface DeprecatedLoaderConfig {
-  urls?: {
-    monacoBase?: string;
-  };
-}
-
-type MonacoModule = Monaco & { m?: Monaco };
-
 interface MonacoRequire {
   config: (config: LoaderConfig) => void;
   (
     dependencies: ['vs/editor/editor.main'],
-    onSuccess: (loaded: MonacoModule) => void,
+    onSuccess: (loaded: Monaco) => void,
     onError: (error: unknown) => void
   ): void;
 }
@@ -42,17 +34,6 @@ const errorMessages = {
   configIsRequired: 'the configuration object is required',
   configType: 'the configuration object should be an object',
   default: 'an unknown error occurred in `@willbooster/monaco-loader` package',
-
-  deprecation: `Deprecation warning!
-    You are using deprecated way of configuration.
-
-    Instead of using
-      monaco.config({ urls: { monacoBase: '...' } })
-    use
-      monaco.config({ paths: { vs: '...' } })
-
-    For more please check the link https://github.com/WillBooster/monaco-loader#config
-  `,
 } as const;
 
 const cancelationMessage = {
@@ -125,20 +106,6 @@ function validateConfig(config: unknown): LoaderConfig {
   }
   if (!isObject(config)) {
     throwError('configType');
-  }
-
-  const deprecatedConfig = config as DeprecatedLoaderConfig;
-  const urls = deprecatedConfig.urls;
-  if (urls) {
-    console.warn(errorMessages.deprecation);
-    const { urls: _, ...restConfig } = config as DeprecatedLoaderConfig & LoaderConfig;
-    return {
-      ...restConfig,
-      paths: {
-        ...restConfig.paths,
-        vs: urls.monacoBase,
-      },
-    };
   }
 
   return config as LoaderConfig;
@@ -233,9 +200,8 @@ function configureLoader(): void {
     monacoRequire(
       ['vs/editor/editor.main'],
       (loaded) => {
-        const monaco = loaded.m ?? loaded;
-        storeMonacoInstance(monaco);
-        resolveMonaco?.(monaco);
+        storeMonacoInstance(loaded);
+        resolveMonaco?.(loaded);
       },
       (error) => rejectMonaco?.(error)
     );

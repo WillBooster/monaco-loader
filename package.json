@@ -38,12 +38,11 @@
     "check-all-for-ai": "yarn check-for-ai && yarn test",
     "check-for-ai": "yarn install > /dev/null && yarn format > /dev/null 2> /dev/null || true && yarn lint-fix --quiet",
     "cleanup": "yarn format && yarn lint-fix",
-    "format": "sort-package-json && yarn format-code && yarn prettify",
+    "format": "sort-package-json && yarn format-code",
     "format-code": "oxfmt --write --no-error-on-unmatched-pattern .",
     "lint": "oxlint --no-error-on-unmatched-pattern .",
     "lint-fix": "yarn lint --fix",
     "prepare": "lefthook install || true",
-    "prettify": "prettier --cache --color --no-error-on-unmatched-pattern --write \"**/{.*/,}*.{java}\" \"!**/test{-,/}fixtures/**\" || true",
     "test": "yarn test:unit && yarn test:e2e:next",
     "test:e2e:next": "yarn build && next build e2e/next-app && playwright test --config e2e/next-app/playwright.config.ts",
     "test:unit": "vitest",
@@ -54,14 +53,14 @@
     "@playwright/test": "1.59.1",
     "@tsconfig/node-lts": "24.0.0",
     "@tsconfig/node-ts": "23.6.4",
+    "@tsconfig/node24": "24.0.4",
     "@types/node": "25.6.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@typescript/native-preview": "7.0.0-dev.20260417.1",
+    "@typescript/native-preview": "7.0.0-dev.20260418.1",
     "@willbooster/oxfmt-config": "1.2.1",
     "@willbooster/oxlint-config": "1.4.4",
-    "@willbooster/prettier-config": "10.4.0",
-    "build-ts": "17.1.0",
+    "build-ts": "17.1.4",
     "conventional-changelog-conventionalcommits": "9.3.1",
     "jsdom": "29.0.2",
     "lefthook": "2.1.5",
@@ -70,8 +69,6 @@
     "oxfmt": "0.45.0",
     "oxlint": "1.60.0",
     "oxlint-tsgolint": "0.21.0",
-    "prettier": "3.8.2",
-    "prettier-plugin-java": "2.8.1",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "semantic-release": "25.0.3",
@@ -80,9 +77,8 @@
     "vitest": "4.1.4"
   },
   "peerDependencies": {
-    "monaco-editor": "^0.55.1"
+    "monaco-editor": "0.55.1"
   },
-  "prettier": "@willbooster/prettier-config",
   "engines": {
     "node": ">=24"
   },

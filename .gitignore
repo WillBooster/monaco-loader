@@ -17,10 +17,10 @@
 __generated__/
 @willbooster/
 dist/
-playwright-report/
 temp/
-test-results/
 tmp/
+playwright-report/
+test-results/
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows
