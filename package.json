@@ -45,8 +45,9 @@
     "prepare": "lefthook install || true",
     "prettify": "prettier --cache --color --no-error-on-unmatched-pattern --write \"**/{.*/,}*.{java}\" \"!**/test{-,/}fixtures/**\" || true",
     "test": "yarn test:unit && yarn test:e2e:next",
-    "test:e2e:next": "yarn build && next build e2e/next-app && playwright install chromium && playwright test --config e2e/next-app/playwright.config.ts",
+    "test:e2e:next": "yarn build && next build e2e/next-app && playwright test --config e2e/next-app/playwright.config.ts",
     "test:unit": "vitest",
+    "test/ci-setup": "playwright install chromium",
     "typecheck": "tsgo --noEmit"
   },
   "devDependencies": {
