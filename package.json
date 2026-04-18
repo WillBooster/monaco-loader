@@ -35,7 +35,7 @@
   },
   "scripts": {
     "build": "build-ts lib",
-    "check-all-for-ai": "yarn check-for-ai && yarn test && yarn test:e2e:next",
+    "check-all-for-ai": "yarn check-for-ai && yarn test",
     "check-for-ai": "yarn install > /dev/null && yarn format > /dev/null 2> /dev/null || true && yarn lint-fix --quiet",
     "cleanup": "yarn format && yarn lint-fix",
     "format": "sort-package-json && yarn format-code && yarn prettify",
@@ -44,8 +44,9 @@
     "lint-fix": "yarn lint --fix",
     "prepare": "lefthook install || true",
     "prettify": "prettier --cache --color --no-error-on-unmatched-pattern --write \"**/{.*/,}*.{java}\" \"!**/test{-,/}fixtures/**\" || true",
-    "test": "vitest",
+    "test": "yarn test:unit && yarn test:e2e:next",
     "test:e2e:next": "yarn build && next build e2e/next-app && playwright test --config e2e/next-app/playwright.config.ts",
+    "test:unit": "vitest",
     "typecheck": "tsgo --noEmit"
   },
   "devDependencies": {
