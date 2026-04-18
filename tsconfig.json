@@ -21,6 +21,6 @@
     "types": ["node", "vitest/globals"]
   },
   "exclude": ["test/fixtures", "packages/*/test/fixtures"],
-  "extends": ["@tsconfig/node24/tsconfig.json", "@tsconfig/node-ts/tsconfig.json"],
+  "extends": ["@tsconfig/node-lts/tsconfig.json", "@tsconfig/node-ts/tsconfig.json", "@tsconfig/node24/tsconfig.json"],
   "include": ["*.config.ts", "scripts/**/*", "src/**/*", "test/**/*"]
 }
