@@ -1,5 +1,8 @@
 export interface Monaco {
-  editor?: unknown;
+  editor: {
+    create: (...args: unknown[]) => unknown;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -42,7 +45,7 @@ declare global {
 const errorMessages = {
   configIsRequired: 'the configuration object is required',
   configType: 'the configuration object should be an object',
-  default: 'an unknown error accured in `@willbooster/monaco-loader` package',
+  default: 'an unknown error occurred in `@willbooster/monaco-loader` package',
 
   deprecation: `Deprecation warning!
     You are using deprecated way of configuration.
@@ -104,18 +107,26 @@ function throwError(type: keyof typeof errorMessages): never {
 }
 
 function mergeConfig(target: LoaderConfig, source: LoaderConfig): LoaderConfig {
-  return {
+  const config = {
     ...target,
     ...source,
-    paths: {
+  };
+
+  if (source.paths) {
+    config.paths = {
       ...target.paths,
       ...source.paths,
-    },
-    'vs/nls': {
+    };
+  }
+
+  if (source['vs/nls']) {
+    config['vs/nls'] = {
       ...target['vs/nls'],
       ...source['vs/nls'],
-    },
-  };
+    };
+  }
+
+  return config;
 }
 
 function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
@@ -144,7 +155,9 @@ function configure(globalConfig: LoaderConfig): void {
   const { monaco, ...config } = validateConfig(globalConfig);
 
   currentConfig = mergeConfig(currentConfig, config);
-  monacoInstance = monaco;
+  if (monaco !== undefined) {
+    monacoInstance = monaco;
+  }
 }
 
 function init(): CancelablePromise<Monaco> {
@@ -169,7 +182,7 @@ function init(): CancelablePromise<Monaco> {
 }
 
 function injectScript(script: HTMLScriptElement): void {
-  document.body.append(script);
+  (document.body || document.head || document.documentElement).append(script);
 }
 
 function createScript(src: string): HTMLScriptElement {
@@ -181,24 +194,38 @@ function createScript(src: string): HTMLScriptElement {
 function getMonacoLoaderScript(configureLoader: () => void): HTMLScriptElement {
   const loaderScript = createScript(`${currentConfig.paths?.vs}/loader.js`);
   loaderScript.addEventListener('load', configureLoader);
-  loaderScript.addEventListener('error', (event) => rejectMonaco?.(event));
+  loaderScript.addEventListener('error', () =>
+    rejectMonaco?.(new Error(`Failed to load monaco loader script from ${loaderScript.src}`))
+  );
 
   return loaderScript;
 }
 
+function isMonacoRequire(value: unknown): value is MonacoRequire {
+  return typeof value === 'function' && typeof (value as { config?: unknown }).config === 'function';
+}
+
 function configureLoader(): void {
-  const require = globalThis.require;
-  if (!require) {
+  const monacoRequire = globalThis.require;
+  if (!isMonacoRequire(monacoRequire)) {
     rejectMonaco?.(new Error('monaco loader was not initialized'));
     return;
   }
 
-  require.config(currentConfig);
-  require(['vs/editor/editor.main'], (loaded) => {
-    const monaco = loaded.m ?? loaded;
-    storeMonacoInstance(monaco);
-    resolveMonaco?.(monaco);
-  }, (error) => rejectMonaco?.(error));
+  try {
+    monacoRequire.config(currentConfig);
+    monacoRequire(
+      ['vs/editor/editor.main'],
+      (loaded) => {
+        const monaco = loaded.m ?? loaded;
+        storeMonacoInstance(monaco);
+        resolveMonaco?.(monaco);
+      },
+      (error) => rejectMonaco?.(error)
+    );
+  } catch (error) {
+    rejectMonaco?.(error);
+  }
 }
 
 function storeMonacoInstance(monaco: Monaco): void {

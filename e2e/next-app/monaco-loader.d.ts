@@ -1,6 +1,9 @@
 declare module '@willbooster/monaco-loader' {
   export interface Monaco {
-    editor?: unknown;
+    editor: {
+      create: (...args: unknown[]) => unknown;
+      [key: string]: unknown;
+    };
     [key: string]: unknown;
   }
 
