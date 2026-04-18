@@ -1,6 +1,6 @@
 {
   "name": "@willbooster/monaco-loader",
-  "version": "1.7.0",
+  "version": "0.0.0-semantically-released",
   "description": "the library aims to setup monaco editor into your browser",
   "keywords": [
     "editor",
