@@ -10,13 +10,19 @@
     "monaco-editor"
   ],
   "homepage": "https://github.com/WillBooster/monaco-loader",
+  "license": "MIT",
+  "author": "WillBooster Inc.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WillBooster/monaco-loader.git"
   },
-  "license": "MIT",
-  "author": "WillBooster Inc.",
+  "files": [
+    "dist/"
+  ],
   "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -24,12 +30,9 @@
       "import": "./dist/index.js"
     }
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "build-ts lib",
     "check-all-for-ai": "yarn check-for-ai && yarn test",
@@ -47,7 +50,6 @@
     "test/ci-setup": "playwright install chromium",
     "typecheck": "tsgo --noEmit"
   },
-  "prettier": "@willbooster/prettier-config",
   "devDependencies": {
     "@playwright/test": "1.59.1",
     "@tsconfig/node-ts": "23.6.4",
@@ -80,11 +82,9 @@
   "peerDependencies": {
     "monaco-editor": "0.55.1"
   },
-  "packageManager": "yarn@4.14.1",
+  "prettier": "@willbooster/prettier-config",
   "engines": {
     "node": ">=24"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "packageManager": "yarn@4.14.1"
 }
