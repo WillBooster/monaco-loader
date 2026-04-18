@@ -1,10 +1,6 @@
-export interface Monaco {
-  editor: {
-    create: (...args: unknown[]) => unknown;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
+import type * as MonacoEditor from 'monaco-editor';
+
+export type Monaco = typeof MonacoEditor;
 
 export interface LoaderConfig {
   paths?: {
