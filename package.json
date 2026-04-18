@@ -10,19 +10,13 @@
     "monaco-editor"
   ],
   "homepage": "https://github.com/WillBooster/monaco-loader",
-  "license": "MIT",
-  "author": "WillBooster Inc.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WillBooster/monaco-loader.git"
   },
-  "files": [
-    "dist/"
-  ],
+  "license": "MIT",
+  "author": "WillBooster Inc.",
   "type": "module",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -30,9 +24,12 @@
       "import": "./dist/index.js"
     }
   },
-  "publishConfig": {
-    "access": "public"
-  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "build-ts lib",
     "check-all-for-ai": "yarn check-for-ai && yarn test",
@@ -60,7 +57,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260418.1",
     "@willbooster/oxfmt-config": "1.2.1",
     "@willbooster/oxlint-config": "1.4.4",
-    "build-ts": "17.1.3",
+    "build-ts": "17.1.4",
     "conventional-changelog-conventionalcommits": "9.3.1",
     "jsdom": "29.0.2",
     "lefthook": "2.1.5",
@@ -79,9 +76,11 @@
   "peerDependencies": {
     "monaco-editor": "0.55.1"
   },
-  "prettier": "@willbooster/prettier-config",
+  "packageManager": "yarn@4.14.1",
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "yarn@4.14.1"
+  "publishConfig": {
+    "access": "public"
+  }
 }
