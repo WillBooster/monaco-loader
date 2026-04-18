@@ -12,9 +12,6 @@
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
     "outDir": "dist",
-    "paths": {
-      "@willbooster/monaco-loader": ["./src/index.ts"]
-    },
     "resolveJsonModule": true,
     "rootDir": ".",
     "skipLibCheck": true,
