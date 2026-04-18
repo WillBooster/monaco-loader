@@ -81,8 +81,46 @@ const wrapperPromise = new Promise<Monaco>((resolve, reject) => {
   rejectMonaco = reject;
 });
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return Object.prototype.toString.call(value).includes('Object');
+const loader = {
+  config: configure,
+  init,
+  __getMonacoInstance,
+};
+
+export default loader;
+
+function configure(globalConfig: LoaderConfig): void {
+  const { monaco, ...config } = validateConfig(globalConfig);
+
+  currentConfig = mergeConfig(currentConfig, config);
+  if (monaco !== undefined) {
+    monacoInstance = monaco;
+  }
+}
+
+function init(): CancelablePromise<Monaco> {
+  if (!initialized) {
+    initialized = true;
+
+    if (monacoInstance) {
+      resolveMonaco?.(monacoInstance);
+      return makeCancelable(wrapperPromise);
+    }
+
+    if (globalThis.monaco?.editor) {
+      storeMonacoInstance(globalThis.monaco);
+      resolveMonaco?.(globalThis.monaco);
+      return makeCancelable(wrapperPromise);
+    }
+
+    injectScript(getMonacoLoaderScript(configureLoader));
+  }
+
+  return makeCancelable(wrapperPromise);
+}
+
+function __getMonacoInstance(): Monaco | undefined {
+  return monacoInstance;
 }
 
 function validateConfig(config: unknown): LoaderConfig {
@@ -108,6 +146,10 @@ function validateConfig(config: unknown): LoaderConfig {
   }
 
   return config as LoaderConfig;
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Object.prototype.toString.call(value) === '[object Object]';
 }
 
 function throwError(type: keyof typeof errorMessages): never {
@@ -157,36 +199,6 @@ function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
   };
 
   return wrappedPromise;
-}
-
-function configure(globalConfig: LoaderConfig): void {
-  const { monaco, ...config } = validateConfig(globalConfig);
-
-  currentConfig = mergeConfig(currentConfig, config);
-  if (monaco !== undefined) {
-    monacoInstance = monaco;
-  }
-}
-
-function init(): CancelablePromise<Monaco> {
-  if (!initialized) {
-    initialized = true;
-
-    if (monacoInstance) {
-      resolveMonaco?.(monacoInstance);
-      return makeCancelable(wrapperPromise);
-    }
-
-    if (globalThis.monaco?.editor) {
-      storeMonacoInstance(globalThis.monaco);
-      resolveMonaco?.(globalThis.monaco);
-      return makeCancelable(wrapperPromise);
-    }
-
-    injectScript(getMonacoLoaderScript(configureLoader));
-  }
-
-  return makeCancelable(wrapperPromise);
 }
 
 function injectScript(script: HTMLScriptElement): void {
@@ -239,15 +251,3 @@ function configureLoader(): void {
 function storeMonacoInstance(monaco: Monaco): void {
   monacoInstance ??= monaco;
 }
-
-function __getMonacoInstance(): Monaco | undefined {
-  return monacoInstance;
-}
-
-const loader = {
-  config: configure,
-  init,
-  __getMonacoInstance,
-};
-
-export default loader;
