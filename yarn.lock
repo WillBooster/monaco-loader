@@ -3542,17 +3542,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/node-lts@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@tsconfig/node-lts@npm:24.0.0"
-  checksum: 10c0/63f5e2c576d4beb19e92ce32b22b132b013b66327137d7c54ee15f9b19812e2ed81bcc5d16ce32450ac7114e774d57100cabd4442571827ed50bfba58aaded0e
-  languageName: node
-  linkType: hard
-
 "@tsconfig/node-ts@npm:23.6.4":
   version: 23.6.4
   resolution: "@tsconfig/node-ts@npm:23.6.4"
   checksum: 10c0/25827b0398263ee9f07c30ede977d2d9ad2c0de1c0e13430c33e5ad15bcb95f23e50bc3938c90e4681feaf2d6ae61deb01d33dd80b2a806609f4fcdc52316832
+  languageName: node
+  linkType: hard
+
+"@tsconfig/node24@npm:24.0.4":
+  version: 24.0.4
+  resolution: "@tsconfig/node24@npm:24.0.4"
+  checksum: 10c0/9c5d4173204c6935c45d3ff0584fd423bd7d8bc3f6b246e646320ae584e4226b34ea1c66ec67cd16769c73e7e80f4cc562287b0acaa4ec81aa482463972ff83f
   languageName: node
   linkType: hard
 
@@ -3903,8 +3903,8 @@ __metadata:
   resolution: "@willbooster/monaco-loader@workspace:."
   dependencies:
     "@playwright/test": "npm:1.59.1"
-    "@tsconfig/node-lts": "npm:24.0.0"
     "@tsconfig/node-ts": "npm:23.6.4"
+    "@tsconfig/node24": "npm:24.0.4"
     "@types/node": "npm:25.6.0"
     "@types/react": "npm:19.2.14"
     "@types/react-dom": "npm:19.2.3"
@@ -3930,7 +3930,7 @@ __metadata:
     vite: "npm:8.0.8"
     vitest: "npm:4.1.4"
   peerDependencies:
-    monaco-editor: ^0.55.1
+    monaco-editor: 0.55.1
   languageName: unknown
   linkType: soft
 

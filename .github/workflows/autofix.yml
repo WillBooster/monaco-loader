@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           check-latest: true
-          node-version: lts/*
+          node-version: 24
       - run: yarn install
       - run: yarn run cleanup
       - run: yarn run build

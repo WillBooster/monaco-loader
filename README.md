@@ -24,6 +24,7 @@ Monaco editor provides a script called `loader`, which itself provides tooling t
 #### Contents
 
 - [Installation](#installation)
+- [Supported versions](#supported-versions)
 - [Introduction](#introduction)
 - [Usage](#usage)
   - [.config](#config)
@@ -45,6 +46,14 @@ yarn add @willbooster/monaco-loader
 ```
 
 NOTE: For TypeScript type definitions, this package uses the [monaco-editor](https://www.npmjs.com/package/monaco-editor) package as a peer dependency. So, if you need types and don't already have the [monaco-editor](https://www.npmjs.com/package/monaco-editor) package installed, you will need to do so.
+
+### Supported versions
+
+This package tracks the latest maintained stack used by this repository:
+
+- Node.js 24 or later
+- `monaco-editor` 0.55.1
+- Next.js 16 with React 19 for the integration app
 
 ### Introduction
 
@@ -199,7 +208,7 @@ And if you use `electron` with `monaco` and have faced an issue different than t
 
 ##### For `Next.js` users
 
-The part of the source that should be pre-parsed is optimized for server-side rendering, so, in usual cases, it will work fine, but if you want to have access, for example, to [`monacoInstance`](#config) you should be aware that it wants to access the `document` object, and it requires browser environment. Basically you just need to avoid running that part out of browser environment, there are several ways to do that. One of them is described [here](https://nextjs.org/docs/advanced-features/dynamic-import#with-no-ssr).
+The part of the source that should be pre-parsed is optimized for server-side rendering, so, in usual cases, it will work fine, but if you want to have access, for example, to [`monacoInstance`](#config) you should be aware that it wants to access the `document` object, and it requires browser environment. Basically you just need to avoid running that part out of browser environment. One option is described in the [Next.js lazy loading guide](https://nextjs.org/docs/app/guides/lazy-loading#loading-external-libraries).
 
 And if you use `monaco` with `Next.js` and have faced an issue different than the above-described one, please let us know to make this section more helpful.
 
