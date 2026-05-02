@@ -25,7 +25,7 @@
   - If not specified, make sure to add a new line at the end of your commit message with: `Co-authored-by: WillBooster (Codex CLI) <agent@willbooster.com>`.
   - Always create new commits. Avoid using `--amend`.
 - Always use heredoc syntax when passing multi-line content to any command.
-- Use `wb start --mode test` to launch a web server for debugging or testing.
+- Use `yarn wb start --mode test` to launch a web server for debugging or testing.
 
 ## Coding Style
 
