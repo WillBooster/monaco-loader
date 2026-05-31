@@ -51,6 +51,7 @@ const defaultConfig = {
 
 let currentConfig: LoaderConfig = defaultConfig;
 let initialized = false;
+let initializationAttemptId = 0;
 let monacoInstance: Monaco | undefined;
 let resolveMonaco: ((monaco: Monaco) => void) | undefined;
 let rejectMonaco: ((error: unknown) => void) | undefined;
@@ -90,7 +91,8 @@ function init(): CancelablePromise<Monaco> {
     }
 
     configureMonacoEnvironment();
-    injectScript(getMonacoLoaderScript(configureLoader));
+    const attemptId = ++initializationAttemptId;
+    injectScript(getMonacoLoaderScript(attemptId));
   }
 
   return makeCancelable(wrapperPromise);
@@ -188,11 +190,13 @@ function createScript(src: string): HTMLScriptElement {
   return script;
 }
 
-function getMonacoLoaderScript(configureLoader: () => void): HTMLScriptElement {
+function getMonacoLoaderScript(attemptId: number): HTMLScriptElement {
   const loaderScript = createScript(`${currentConfig.paths?.vs}/loader.js`);
-  loaderScript.addEventListener('load', configureLoader);
+  loaderScript.addEventListener('load', () => {
+    configureLoader(attemptId);
+  });
   loaderScript.addEventListener('error', () =>
-    failInitialization(new Error(`Failed to load monaco loader script from ${loaderScript.src}`))
+    failInitialization(new Error(`Failed to load monaco loader script from ${loaderScript.src}`), attemptId)
   );
 
   return loaderScript;
@@ -216,10 +220,12 @@ function isMonacoRequire(value: unknown): value is MonacoRequire {
   return typeof value === 'function' && typeof (value as { config?: unknown }).config === 'function';
 }
 
-function configureLoader(): void {
+function configureLoader(attemptId: number): void {
+  if (attemptId !== initializationAttemptId) return;
+
   const monacoRequire = globalThis.require;
   if (!isMonacoRequire(monacoRequire)) {
-    rejectMonaco?.(new Error('monaco loader was not initialized'));
+    failInitialization(new Error('monaco loader was not initialized'), attemptId);
     return;
   }
 
@@ -228,13 +234,17 @@ function configureLoader(): void {
     monacoRequire(
       ['vs/editor/editor.main'],
       (loaded) => {
+        if (attemptId !== initializationAttemptId) return;
+
         storeMonacoInstance(loaded);
         resolveMonaco?.(loaded);
       },
-      failInitialization
+      (error) => {
+        failInitialization(error, attemptId);
+      }
     );
   } catch (error) {
-    failInitialization(error);
+    failInitialization(error, attemptId);
   }
 }
 
@@ -242,7 +252,9 @@ function storeMonacoInstance(monaco: Monaco): void {
   monacoInstance ??= monaco;
 }
 
-function failInitialization(error: unknown): void {
+function failInitialization(error: unknown, attemptId: number): void {
+  if (attemptId !== initializationAttemptId) return;
+
   initialized = false;
   rejectMonaco?.(error);
   wrapperPromise = createWrapperPromise();
