@@ -28,6 +28,7 @@ interface MonacoRequire {
 }
 
 declare global {
+  var MonacoEnvironment: MonacoEnvironment | undefined;
   var monaco: Monaco | undefined;
   var require: MonacoRequire | undefined;
 }
@@ -151,13 +152,6 @@ function mergeConfig(target: LoaderConfig, source: LoaderConfig): LoaderConfig {
   return config;
 }
 
-function createWrapperPromise(): Promise<Monaco> {
-  return new Promise<Monaco>((resolve, reject) => {
-    resolveMonaco = resolve;
-    rejectMonaco = reject;
-  });
-}
-
 function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
   let canceled = false;
 
@@ -211,15 +205,6 @@ function configureMonacoEnvironment(): void {
   };
 }
 
-function getAmdLoaderConfig(): LoaderConfig {
-  const { monacoEnvironment, ...loaderConfig } = currentConfig;
-  return loaderConfig;
-}
-
-function isMonacoRequire(value: unknown): value is MonacoRequire {
-  return typeof value === 'function' && typeof (value as { config?: unknown }).config === 'function';
-}
-
 function configureLoader(attemptId: number): void {
   if (attemptId !== initializationAttemptId) return;
 
@@ -252,10 +237,26 @@ function storeMonacoInstance(monaco: Monaco): void {
   monacoInstance ??= monaco;
 }
 
+function getAmdLoaderConfig(): LoaderConfig {
+  const { monacoEnvironment, ...loaderConfig } = currentConfig;
+  return loaderConfig;
+}
+
+function isMonacoRequire(value: unknown): value is MonacoRequire {
+  return typeof value === 'function' && typeof (value as { config?: unknown }).config === 'function';
+}
+
 function failInitialization(error: unknown, attemptId: number): void {
   if (attemptId !== initializationAttemptId) return;
 
   initialized = false;
   rejectMonaco?.(error);
   wrapperPromise = createWrapperPromise();
+}
+
+function createWrapperPromise(): Promise<Monaco> {
+  return new Promise<Monaco>((resolve, reject) => {
+    resolveMonaco = resolve;
+    rejectMonaco = reject;
+  });
 }
