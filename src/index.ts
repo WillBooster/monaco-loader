@@ -1,6 +1,7 @@
 import type * as MonacoEditor from 'monaco-editor';
 
 export type Monaco = typeof MonacoEditor;
+export type MonacoEnvironment = MonacoEditor.Environment;
 
 export interface LoaderConfig {
   paths?: {
@@ -9,6 +10,7 @@ export interface LoaderConfig {
   'vs/nls'?: {
     availableLanguages?: Record<string, unknown>;
   };
+  monacoEnvironment?: MonacoEnvironment;
   monaco?: Monaco;
 }
 
@@ -53,10 +55,7 @@ let monacoInstance: Monaco | undefined;
 let resolveMonaco: ((monaco: Monaco) => void) | undefined;
 let rejectMonaco: ((error: unknown) => void) | undefined;
 
-const wrapperPromise = new Promise<Monaco>((resolve, reject) => {
-  resolveMonaco = resolve;
-  rejectMonaco = reject;
-});
+let wrapperPromise = createWrapperPromise();
 
 const loader = {
   config: configure,
@@ -90,6 +89,7 @@ function init(): CancelablePromise<Monaco> {
       return makeCancelable(wrapperPromise);
     }
 
+    configureMonacoEnvironment();
     injectScript(getMonacoLoaderScript(configureLoader));
   }
 
@@ -139,7 +139,21 @@ function mergeConfig(target: LoaderConfig, source: LoaderConfig): LoaderConfig {
     };
   }
 
+  if (source.monacoEnvironment) {
+    config.monacoEnvironment = {
+      ...target.monacoEnvironment,
+      ...source.monacoEnvironment,
+    };
+  }
+
   return config;
+}
+
+function createWrapperPromise(): Promise<Monaco> {
+  return new Promise<Monaco>((resolve, reject) => {
+    resolveMonaco = resolve;
+    rejectMonaco = reject;
+  });
 }
 
 function makeCancelable<T>(promise: Promise<T>): CancelablePromise<T> {
@@ -178,10 +192,24 @@ function getMonacoLoaderScript(configureLoader: () => void): HTMLScriptElement {
   const loaderScript = createScript(`${currentConfig.paths?.vs}/loader.js`);
   loaderScript.addEventListener('load', configureLoader);
   loaderScript.addEventListener('error', () =>
-    rejectMonaco?.(new Error(`Failed to load monaco loader script from ${loaderScript.src}`))
+    failInitialization(new Error(`Failed to load monaco loader script from ${loaderScript.src}`))
   );
 
   return loaderScript;
+}
+
+function configureMonacoEnvironment(): void {
+  if (!currentConfig.monacoEnvironment) return;
+
+  globalThis.MonacoEnvironment = {
+    ...globalThis.MonacoEnvironment,
+    ...currentConfig.monacoEnvironment,
+  };
+}
+
+function getAmdLoaderConfig(): LoaderConfig {
+  const { monacoEnvironment, ...loaderConfig } = currentConfig;
+  return loaderConfig;
 }
 
 function isMonacoRequire(value: unknown): value is MonacoRequire {
@@ -196,20 +224,26 @@ function configureLoader(): void {
   }
 
   try {
-    monacoRequire.config(currentConfig);
+    monacoRequire.config(getAmdLoaderConfig());
     monacoRequire(
       ['vs/editor/editor.main'],
       (loaded) => {
         storeMonacoInstance(loaded);
         resolveMonaco?.(loaded);
       },
-      (error) => rejectMonaco?.(error)
+      failInitialization
     );
   } catch (error) {
-    rejectMonaco?.(error);
+    failInitialization(error);
   }
 }
 
 function storeMonacoInstance(monaco: Monaco): void {
   monacoInstance ??= monaco;
+}
+
+function failInitialization(error: unknown): void {
+  initialized = false;
+  rejectMonaco?.(error);
+  wrapperPromise = createWrapperPromise();
 }
