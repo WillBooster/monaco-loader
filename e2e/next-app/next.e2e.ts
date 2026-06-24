@@ -25,3 +25,30 @@ test('falls back to the next Monaco asset base URL when the primary loader scrip
   await expect(page.getByTestId('fallback-init')).toHaveText('fallback-init-ok');
   expect(errors).toEqual([]);
 });
+
+test('falls back when the primary Monaco editor module fails after loader.js initializes', async ({ page }) => {
+  const errors: string[] = [];
+  const primaryEditorMainUrl = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/editor/editor.main.js';
+  const fallbackRequests: string[] = [];
+
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.route(primaryEditorMainUrl, (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: 'application/javascript',
+      body: '/* primary editor.main unavailable */',
+    })
+  );
+  page.on('request', (request) => {
+    const url = request.url();
+    if (url.startsWith('https://unpkg.com/monaco-editor@0.55.1/min/vs/')) {
+      fallbackRequests.push(url);
+    }
+  });
+
+  await page.goto('/fallback-editor-assets');
+
+  await expect(page.getByTestId('fallback-editor-assets')).toHaveText('fallback-editor-assets-ok');
+  expect(fallbackRequests.some((url) => url.endsWith('/editor/editor.main.js'))).toBe(true);
+  expect(errors).toEqual([]);
+});

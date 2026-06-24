@@ -25,6 +25,7 @@ export interface CancelablePromise<T> extends Promise<T> {
 
 interface MonacoRequire {
   config: (config: MonacoRequireConfig) => void;
+  reset?: () => void;
   (
     dependencies: ['vs/editor/editor.main'],
     onSuccess: (loaded: Monaco) => void,
@@ -215,14 +216,14 @@ function loadMonaco(vsBaseUrlIndex: number, lastError?: unknown): void {
   }
 
   if (isMonacoRequire(globalThis.require)) {
-    configureLoader(vsBaseUrl, (error) => loadMonaco(vsBaseUrlIndex + 1, error));
+    configureLoader(vsBaseUrl, vsBaseUrlIndex > 0, (error) => loadMonaco(vsBaseUrlIndex + 1, error));
     return;
   }
 
   injectScript(
     getMonacoLoaderScript(
       vsBaseUrl,
-      () => configureLoader(vsBaseUrl, (error) => loadMonaco(vsBaseUrlIndex + 1, error)),
+      () => configureLoader(vsBaseUrl, false, (error) => loadMonaco(vsBaseUrlIndex + 1, error)),
       (error) => loadMonaco(vsBaseUrlIndex + 1, error)
     )
   );
@@ -235,7 +236,7 @@ function getVsBaseUrls(): string[] {
   );
 }
 
-function configureLoader(vsBaseUrl: string, retry: (error: unknown) => void): void {
+function configureLoader(vsBaseUrl: string, resetLoader: boolean, retry: (error: unknown) => void): void {
   const monacoRequire = globalThis.require;
   if (!isMonacoRequire(monacoRequire)) {
     retry(new Error('monaco loader was not initialized'));
@@ -243,6 +244,9 @@ function configureLoader(vsBaseUrl: string, retry: (error: unknown) => void): vo
   }
 
   try {
+    if (resetLoader) {
+      monacoRequire.reset?.();
+    }
     monacoRequire.config(createRequireConfig(vsBaseUrl));
     monacoRequire(
       ['vs/editor/editor.main'],
