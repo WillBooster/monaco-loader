@@ -1,23 +1,30 @@
 import type * as MonacoEditor from 'monaco-editor';
 
 export type Monaco = typeof MonacoEditor;
+export type MonacoEnvironment = MonacoEditor.Environment;
 
 export interface LoaderConfig {
   paths?: {
     vs?: string;
   };
+  fallbackPaths?: {
+    vs?: string;
+  }[];
+  monacoEnvironment?: MonacoEnvironment;
   'vs/nls'?: {
     availableLanguages?: Record<string, unknown>;
   };
   monaco?: Monaco;
 }
 
+type MonacoRequireConfig = Omit<LoaderConfig, 'fallbackPaths' | 'monaco' | 'monacoEnvironment'>;
+
 export interface CancelablePromise<T> extends Promise<T> {
   cancel: () => void;
 }
 
 interface MonacoRequire {
-  config: (config: LoaderConfig) => void;
+  config: (config: MonacoRequireConfig) => void;
   (
     dependencies: ['vs/editor/editor.main'],
     onSuccess: (loaded: Monaco) => void,
@@ -26,6 +33,7 @@ interface MonacoRequire {
 }
 
 declare global {
+  var MonacoEnvironment: MonacoEnvironment | undefined;
   var monaco: Monaco | undefined;
   var require: MonacoRequire | undefined;
 }
@@ -52,11 +60,7 @@ let initialized = false;
 let monacoInstance: Monaco | undefined;
 let resolveMonaco: ((monaco: Monaco) => void) | undefined;
 let rejectMonaco: ((error: unknown) => void) | undefined;
-
-const wrapperPromise = new Promise<Monaco>((resolve, reject) => {
-  resolveMonaco = resolve;
-  rejectMonaco = reject;
-});
+let wrapperPromise = createWrapperPromise();
 
 const loader = {
   config: configure,
@@ -78,6 +82,7 @@ function configure(globalConfig: LoaderConfig): void {
 function init(): CancelablePromise<Monaco> {
   if (!initialized) {
     initialized = true;
+    wrapperPromise = createWrapperPromise();
 
     if (monacoInstance) {
       resolveMonaco?.(monacoInstance);
@@ -90,7 +95,7 @@ function init(): CancelablePromise<Monaco> {
       return makeCancelable(wrapperPromise);
     }
 
-    injectScript(getMonacoLoaderScript(configureLoader));
+    loadMonaco(0);
   }
 
   return makeCancelable(wrapperPromise);
@@ -138,6 +143,12 @@ function mergeConfig(target: LoaderConfig, source: LoaderConfig): LoaderConfig {
       ...source['vs/nls'],
     };
   }
+  if (source.monacoEnvironment) {
+    config.monacoEnvironment = {
+      ...target.monacoEnvironment,
+      ...source.monacoEnvironment,
+    };
+  }
 
   return config;
 }
@@ -174,11 +185,15 @@ function createScript(src: string): HTMLScriptElement {
   return script;
 }
 
-function getMonacoLoaderScript(configureLoader: () => void): HTMLScriptElement {
-  const loaderScript = createScript(`${currentConfig.paths?.vs}/loader.js`);
-  loaderScript.addEventListener('load', configureLoader);
+function getMonacoLoaderScript(
+  vsBaseUrl: string,
+  onLoad: () => void,
+  onError: (error: unknown) => void
+): HTMLScriptElement {
+  const loaderScript = createScript(`${vsBaseUrl}/loader.js`);
+  loaderScript.addEventListener('load', onLoad);
   loaderScript.addEventListener('error', () =>
-    rejectMonaco?.(new Error(`Failed to load monaco loader script from ${loaderScript.src}`))
+    onError(new Error(`Failed to load monaco loader script from ${loaderScript.src}`))
   );
 
   return loaderScript;
@@ -188,26 +203,99 @@ function isMonacoRequire(value: unknown): value is MonacoRequire {
   return typeof value === 'function' && typeof (value as { config?: unknown }).config === 'function';
 }
 
-function configureLoader(): void {
+function loadMonaco(vsBaseUrlIndex: number, lastError?: unknown): void {
+  applyMonacoEnvironment();
+
+  const vsBaseUrls = getVsBaseUrls();
+  const vsBaseUrl = vsBaseUrls[vsBaseUrlIndex];
+  if (!vsBaseUrl) {
+    initialized = false;
+    rejectMonaco?.(normalizeLoadError(lastError ?? new Error('No monaco editor asset base URL is configured')));
+    return;
+  }
+
+  if (isMonacoRequire(globalThis.require)) {
+    configureLoader(vsBaseUrl, (error) => loadMonaco(vsBaseUrlIndex + 1, error));
+    return;
+  }
+
+  injectScript(
+    getMonacoLoaderScript(
+      vsBaseUrl,
+      () => configureLoader(vsBaseUrl, (error) => loadMonaco(vsBaseUrlIndex + 1, error)),
+      (error) => loadMonaco(vsBaseUrlIndex + 1, error)
+    )
+  );
+}
+
+function getVsBaseUrls(): string[] {
+  return [currentConfig.paths?.vs, ...(currentConfig.fallbackPaths ?? []).map((paths) => paths.vs)].filter(
+    (vsBaseUrl, index, vsBaseUrls): vsBaseUrl is string =>
+      typeof vsBaseUrl === 'string' && vsBaseUrl.length > 0 && vsBaseUrls.indexOf(vsBaseUrl) === index
+  );
+}
+
+function configureLoader(vsBaseUrl: string, retry: (error: unknown) => void): void {
   const monacoRequire = globalThis.require;
   if (!isMonacoRequire(monacoRequire)) {
-    rejectMonaco?.(new Error('monaco loader was not initialized'));
+    retry(new Error('monaco loader was not initialized'));
     return;
   }
 
   try {
-    monacoRequire.config(currentConfig);
+    monacoRequire.config(createRequireConfig(vsBaseUrl));
     monacoRequire(
       ['vs/editor/editor.main'],
       (loaded) => {
         storeMonacoInstance(loaded);
         resolveMonaco?.(loaded);
       },
-      (error) => rejectMonaco?.(error)
+      retry
     );
   } catch (error) {
-    rejectMonaco?.(error);
+    retry(error);
   }
+}
+
+function createRequireConfig(vsBaseUrl: string): MonacoRequireConfig {
+  return {
+    'vs/nls': currentConfig['vs/nls'],
+    paths: {
+      ...currentConfig.paths,
+      vs: vsBaseUrl,
+    },
+  };
+}
+
+function applyMonacoEnvironment(): void {
+  if (!currentConfig.monacoEnvironment) return;
+
+  globalThis.MonacoEnvironment = {
+    ...globalThis.MonacoEnvironment,
+    ...currentConfig.monacoEnvironment,
+  };
+}
+
+function normalizeLoadError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  const normalizedError = new Error(String(error));
+  if (isObject(error)) {
+    for (const [key, value] of Object.entries(error)) {
+      Object.defineProperty(normalizedError, key, {
+        value,
+        enumerable: true,
+        configurable: true,
+      });
+    }
+  }
+  return normalizedError;
+}
+
+function createWrapperPromise(): Promise<Monaco> {
+  return new Promise<Monaco>((resolve, reject) => {
+    resolveMonaco = resolve;
+    rejectMonaco = reject;
+  });
 }
 
 function storeMonacoInstance(monaco: Monaco): void {
