@@ -1,5 +1,12 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { expect, test } from '@playwright/test';
 
+const testFile = fileURLToPath(import.meta.url);
+const appDir = path.dirname(testFile);
+const packageRoot = path.resolve(appDir, '../..');
 const monacoReadyTimeout = 15_000;
 
 test('loads monaco-loader through the Next.js app router', async ({ page }) => {
@@ -41,6 +48,15 @@ test('falls back when the primary Monaco editor module fails after loader.js ini
       body: '/* primary editor.main unavailable */',
     })
   );
+  await page.route('https://unpkg.com/monaco-editor@0.55.1/min/vs/**', async (route, request) => {
+    const assetPath = decodeURIComponent(new URL(request.url()).pathname.split('/min/vs/')[1]!);
+    const body = await readFile(path.join(packageRoot, 'node_modules/monaco-editor/min/vs', assetPath));
+    await route.fulfill({
+      status: 200,
+      contentType: getContentType(assetPath),
+      body,
+    });
+  });
   page.on('request', (request) => {
     const url = request.url();
     if (url.startsWith('https://unpkg.com/monaco-editor@0.55.1/min/vs/')) {
@@ -56,3 +72,9 @@ test('falls back when the primary Monaco editor module fails after loader.js ini
   expect(fallbackRequests.some((url) => url.endsWith('/editor/editor.main.js'))).toBe(true);
   expect(errors).toEqual([]);
 });
+
+function getContentType(assetPath: string): string {
+  if (assetPath.endsWith('.css')) return 'text/css';
+  if (assetPath.endsWith('.ttf')) return 'font/ttf';
+  return 'application/javascript';
+}
