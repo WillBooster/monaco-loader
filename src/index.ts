@@ -216,7 +216,7 @@ function loadMonaco(vsBaseUrlIndex: number, lastError?: unknown): void {
   }
 
   if (isMonacoRequire(globalThis.require)) {
-    configureLoader(vsBaseUrl, vsBaseUrlIndex > 0, (error) => loadMonaco(vsBaseUrlIndex + 1, error));
+    configureLoader(vsBaseUrl, true, (error) => loadMonaco(vsBaseUrlIndex + 1, error));
     return;
   }
 
@@ -289,6 +289,7 @@ function normalizeLoadError(error: unknown): Error {
         value,
         enumerable: true,
         configurable: true,
+        writable: true,
       });
     }
   }
