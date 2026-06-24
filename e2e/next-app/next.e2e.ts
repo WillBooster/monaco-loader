@@ -15,3 +15,13 @@ test('loads monaco-loader through the Next.js app router', async ({ page }) => {
   await expect(page.getByTestId('client-init')).toHaveText('client-init-ok');
   expect(errors).toEqual([]);
 });
+
+test('falls back to the next Monaco asset base URL when the primary loader script is unavailable', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/fallback');
+
+  await expect(page.getByTestId('fallback-init')).toHaveText('fallback-init-ok');
+  expect(errors).toEqual([]);
+});

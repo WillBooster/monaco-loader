@@ -11,6 +11,9 @@ declare module '@willbooster/monaco-loader' {
     paths?: {
       vs?: string;
     };
+    fallbackPaths?: {
+      vs?: string;
+    }[];
     'vs/nls'?: {
       availableLanguages?: Record<string, unknown>;
     };
