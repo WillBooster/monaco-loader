@@ -8,10 +8,10 @@ export interface LoaderConfig {
     vs?: string;
   };
   fallbackPaths?: ({ vs?: string } | undefined)[];
-  monacoEnvironment?: MonacoEnvironment;
   'vs/nls'?: {
     availableLanguages?: Record<string, unknown>;
   };
+  monacoEnvironment?: MonacoEnvironment;
   monaco?: Monaco;
 }
 
@@ -56,6 +56,7 @@ const defaultConfig = {
 
 let currentConfig: LoaderConfig = defaultConfig;
 let initialized = false;
+let initializationAttemptId = 0;
 let monacoInstance: Monaco | undefined;
 let resolveMonaco: ((monaco: Monaco) => void) | undefined;
 let rejectMonaco: ((error: unknown) => void) | undefined;
@@ -82,19 +83,22 @@ function init(): CancelablePromise<Monaco> {
   if (!initialized) {
     initialized = true;
     wrapperPromise = createWrapperPromise();
+    const currentWrapperPromise = wrapperPromise;
 
     if (monacoInstance) {
       resolveMonaco?.(monacoInstance);
-      return makeCancelable(wrapperPromise);
+      return makeCancelable(currentWrapperPromise);
     }
 
     if (globalThis.monaco?.editor) {
       storeMonacoInstance(globalThis.monaco);
       resolveMonaco?.(globalThis.monaco);
-      return makeCancelable(wrapperPromise);
+      return makeCancelable(currentWrapperPromise);
     }
 
-    loadMonaco(0);
+    const attemptId = ++initializationAttemptId;
+    loadMonaco(attemptId, 0);
+    return makeCancelable(currentWrapperPromise);
   }
 
   return makeCancelable(wrapperPromise);
@@ -142,6 +146,7 @@ function mergeConfig(target: LoaderConfig, source: LoaderConfig): LoaderConfig {
       ...source['vs/nls'],
     };
   }
+
   if (source.monacoEnvironment) {
     config.monacoEnvironment = {
       ...target.monacoEnvironment,
@@ -198,35 +203,28 @@ function getMonacoLoaderScript(
   return loaderScript;
 }
 
-function isMonacoRequire(value: unknown): value is MonacoRequire {
-  return (
-    typeof value === 'function' &&
-    typeof (value as { config?: unknown }).config === 'function' &&
-    typeof (value as { reset?: unknown }).reset === 'function'
-  );
-}
+function loadMonaco(attemptId: number, vsBaseUrlIndex: number, lastError?: unknown): void {
+  if (attemptId !== initializationAttemptId) return;
 
-function loadMonaco(vsBaseUrlIndex: number, lastError?: unknown): void {
-  applyMonacoEnvironment();
+  configureMonacoEnvironment();
 
   const vsBaseUrls = getVsBaseUrls();
   const vsBaseUrl = vsBaseUrls[vsBaseUrlIndex];
   if (!vsBaseUrl) {
-    initialized = false;
-    rejectMonaco?.(normalizeLoadError(lastError ?? new Error('No monaco editor asset base URL is configured')));
+    failInitialization(lastError ?? new Error('No monaco editor asset base URL is configured'), attemptId);
     return;
   }
 
   if (isMonacoRequire(globalThis.require)) {
-    configureLoader(vsBaseUrl, true, (error) => loadMonaco(vsBaseUrlIndex + 1, error));
+    configureLoader(attemptId, vsBaseUrl, true, (error) => loadMonaco(attemptId, vsBaseUrlIndex + 1, error));
     return;
   }
 
   injectScript(
     getMonacoLoaderScript(
       vsBaseUrl,
-      () => configureLoader(vsBaseUrl, false, (error) => loadMonaco(vsBaseUrlIndex + 1, error)),
-      (error) => loadMonaco(vsBaseUrlIndex + 1, error)
+      () => configureLoader(attemptId, vsBaseUrl, false, (error) => loadMonaco(attemptId, vsBaseUrlIndex + 1, error)),
+      (error) => loadMonaco(attemptId, vsBaseUrlIndex + 1, error)
     )
   );
 }
@@ -238,7 +236,23 @@ function getVsBaseUrls(): string[] {
   );
 }
 
-function configureLoader(vsBaseUrl: string, resetLoader: boolean, retry: (error: unknown) => void): void {
+function configureMonacoEnvironment(): void {
+  if (!currentConfig.monacoEnvironment) return;
+
+  globalThis.MonacoEnvironment = {
+    ...globalThis.MonacoEnvironment,
+    ...currentConfig.monacoEnvironment,
+  };
+}
+
+function configureLoader(
+  attemptId: number,
+  vsBaseUrl: string,
+  resetLoader: boolean,
+  retry: (error: unknown) => void
+): void {
+  if (attemptId !== initializationAttemptId) return;
+
   const monacoRequire = globalThis.require;
   if (!isMonacoRequire(monacoRequire)) {
     retry(new Error('monaco loader was not initialized'));
@@ -253,6 +267,8 @@ function configureLoader(vsBaseUrl: string, resetLoader: boolean, retry: (error:
     monacoRequire(
       ['vs/editor/editor.main'],
       (loaded) => {
+        if (attemptId !== initializationAttemptId) return;
+
         storeMonacoInstance(loaded);
         resolveMonaco?.(loaded);
       },
@@ -278,13 +294,20 @@ function createRequireConfig(vsBaseUrl: string): MonacoRequireConfig {
   };
 }
 
-function applyMonacoEnvironment(): void {
-  if (!currentConfig.monacoEnvironment) return;
+function isMonacoRequire(value: unknown): value is MonacoRequire {
+  return (
+    typeof value === 'function' &&
+    typeof (value as { config?: unknown }).config === 'function' &&
+    typeof (value as { reset?: unknown }).reset === 'function'
+  );
+}
 
-  globalThis.MonacoEnvironment = {
-    ...globalThis.MonacoEnvironment,
-    ...currentConfig.monacoEnvironment,
-  };
+function failInitialization(error: unknown, attemptId: number): void {
+  if (attemptId !== initializationAttemptId) return;
+
+  initialized = false;
+  rejectMonaco?.(normalizeLoadError(error));
+  wrapperPromise = createWrapperPromise();
 }
 
 function normalizeLoadError(error: unknown): Error {
