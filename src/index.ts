@@ -7,9 +7,7 @@ export interface LoaderConfig {
   paths?: {
     vs?: string;
   };
-  fallbackPaths?: {
-    vs?: string;
-  }[];
+  fallbackPaths?: ({ vs?: string } | undefined)[];
   monacoEnvironment?: MonacoEnvironment;
   'vs/nls'?: {
     availableLanguages?: Record<string, unknown>;
@@ -230,7 +228,7 @@ function loadMonaco(vsBaseUrlIndex: number, lastError?: unknown): void {
 }
 
 function getVsBaseUrls(): string[] {
-  return [currentConfig.paths?.vs, ...(currentConfig.fallbackPaths ?? []).map((paths) => paths.vs)].filter(
+  return [currentConfig.paths?.vs, ...(currentConfig.fallbackPaths ?? []).map((paths) => paths?.vs)].filter(
     (vsBaseUrl, index, vsBaseUrls): vsBaseUrl is string =>
       typeof vsBaseUrl === 'string' && vsBaseUrl.length > 0 && vsBaseUrls.indexOf(vsBaseUrl) === index
   );
@@ -262,8 +260,13 @@ function configureLoader(vsBaseUrl: string, resetLoader: boolean, retry: (error:
 }
 
 function createRequireConfig(vsBaseUrl: string): MonacoRequireConfig {
+  const { fallbackPaths, monaco, monacoEnvironment, ...requireConfig } = currentConfig;
+  void fallbackPaths;
+  void monaco;
+  void monacoEnvironment;
+
   return {
-    'vs/nls': currentConfig['vs/nls'],
+    ...requireConfig,
     paths: {
       ...currentConfig.paths,
       vs: vsBaseUrl,
@@ -283,7 +286,7 @@ function applyMonacoEnvironment(): void {
 function normalizeLoadError(error: unknown): Error {
   if (error instanceof Error) return error;
   const normalizedError = new Error(String(error));
-  if (isObject(error)) {
+  if (typeof error === 'object' && error !== null) {
     for (const [key, value] of Object.entries(error)) {
       Object.defineProperty(normalizedError, key, {
         value,
