@@ -23,7 +23,7 @@ export interface CancelablePromise<T> extends Promise<T> {
 
 interface MonacoRequire {
   config: (config: MonacoRequireConfig) => void;
-  reset?: () => void;
+  reset: () => void;
   (
     dependencies: ['vs/editor/editor.main'],
     onSuccess: (loaded: Monaco) => void,
@@ -199,7 +199,11 @@ function getMonacoLoaderScript(
 }
 
 function isMonacoRequire(value: unknown): value is MonacoRequire {
-  return typeof value === 'function' && typeof (value as { config?: unknown }).config === 'function';
+  return (
+    typeof value === 'function' &&
+    typeof (value as { config?: unknown }).config === 'function' &&
+    typeof (value as { reset?: unknown }).reset === 'function'
+  );
 }
 
 function loadMonaco(vsBaseUrlIndex: number, lastError?: unknown): void {
@@ -243,7 +247,7 @@ function configureLoader(vsBaseUrl: string, resetLoader: boolean, retry: (error:
 
   try {
     if (resetLoader) {
-      monacoRequire.reset?.();
+      monacoRequire.reset();
     }
     monacoRequire.config(createRequireConfig(vsBaseUrl));
     monacoRequire(
@@ -285,9 +289,17 @@ function applyMonacoEnvironment(): void {
 
 function normalizeLoadError(error: unknown): Error {
   if (error instanceof Error) return error;
-  const normalizedError = new Error(String(error));
+  const message =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : String(error);
+  const normalizedError = new Error(message);
   if (typeof error === 'object' && error !== null) {
+    if ('stack' in error) {
+      normalizedError.stack = String((error as { stack: unknown }).stack);
+    }
     for (const [key, value] of Object.entries(error)) {
+      if (key === 'message' || key === 'stack') continue;
       Object.defineProperty(normalizedError, key, {
         value,
         enumerable: true,

@@ -98,6 +98,8 @@ describe('.init', () => {
   test('preserves writable diagnostic fields from non-plain load errors', async () => {
     const freshLoader = await importFreshLoader();
     const loadError = Object.create({ [Symbol.toStringTag]: 'Error' }) as { requireType: string };
+    Object.defineProperty(loadError, 'message', { value: 'cross realm load failed' });
+    Object.defineProperty(loadError, 'stack', { value: 'Error: cross realm load failed\n    at test' });
     loadError.requireType = 'scripterror';
     const monacoRequire = Object.assign(
       (
@@ -119,6 +121,8 @@ describe('.init', () => {
       throw new Error('expected loader init to fail');
     } catch (error) {
       expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('cross realm load failed');
+      expect((error as Error).stack).toBe('Error: cross realm load failed\n    at test');
       expect(error).toMatchObject({ requireType: 'scripterror' });
       (error as Error & { requireType: string }).requireType = 'updated';
       expect(error).toMatchObject({ requireType: 'updated' });

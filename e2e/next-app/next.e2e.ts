@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const monacoReadyTimeout = 15_000;
+
 test('loads monaco-loader through the Next.js app router', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (message) => {
@@ -22,7 +24,7 @@ test('falls back to the next Monaco asset base URL when the primary loader scrip
 
   await page.goto('/fallback');
 
-  await expect(page.getByTestId('fallback-init')).toHaveText('fallback-init-ok');
+  await expect(page.getByTestId('fallback-init')).toHaveText('fallback-init-ok', { timeout: monacoReadyTimeout });
   expect(errors).toEqual([]);
 });
 
@@ -48,7 +50,9 @@ test('falls back when the primary Monaco editor module fails after loader.js ini
 
   await page.goto('/fallback-editor-assets');
 
-  await expect(page.getByTestId('fallback-editor-assets')).toHaveText('fallback-editor-assets-ok');
+  await expect(page.getByTestId('fallback-editor-assets')).toHaveText('fallback-editor-assets-ok', {
+    timeout: monacoReadyTimeout,
+  });
   expect(fallbackRequests.some((url) => url.endsWith('/editor/editor.main.js'))).toBe(true);
   expect(errors).toEqual([]);
 });
