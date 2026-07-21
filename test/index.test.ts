@@ -3,6 +3,12 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import loader from '../src/index.js';
 import type { LoaderConfig, Monaco } from '../src/index.js';
 
+// The global `require` is typed as NodeRequire/Require by @types/node/@types/bun, so assign the
+// Monaco AMD require mock through an opaque cast rather than fighting that ambient type.
+function setGlobalRequire(value: unknown): void {
+  (globalThis as { require?: unknown }).require = value;
+}
+
 const errorMessages = {
   configIsRequired: 'the configuration object is required',
   configType: 'the configuration object should be an object',
@@ -59,7 +65,7 @@ describe('.config', () => {
 
 describe('.init', () => {
   afterEach(() => {
-    globalThis.require = undefined;
+    setGlobalRequire(undefined);
     globalThis.monaco = undefined;
   });
 
@@ -78,7 +84,7 @@ describe('.init', () => {
       }
     );
 
-    globalThis.require = monacoRequire;
+    setGlobalRequire(monacoRequire);
     freshLoader.config({
       cspNonce: 'nonce-value',
       fallbackPaths: [undefined, { vs: 'https://example.com/fallback/vs' }],
@@ -113,7 +119,7 @@ describe('.init', () => {
       }
     );
 
-    globalThis.require = monacoRequire;
+    setGlobalRequire(monacoRequire);
     freshLoader.config({ paths: { vs: 'https://example.com/primary/vs' } });
 
     try {
