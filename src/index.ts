@@ -34,7 +34,13 @@ interface MonacoRequire {
 declare global {
   var MonacoEnvironment: MonacoEnvironment | undefined;
   var monaco: Monaco | undefined;
-  var require: MonacoRequire | undefined;
+}
+
+// The global `require` is the AMD loader Monaco injects; its type is owned by @types/node/@types/bun
+// (as `NodeRequire`/`Require`), so it cannot be re-declared as `MonacoRequire`. Read it opaquely and
+// narrow with `isMonacoRequire`.
+function getGlobalRequire(): unknown {
+  return (globalThis as { require?: unknown }).require;
 }
 
 const errorMessages = {
@@ -215,7 +221,7 @@ function loadMonaco(attemptId: number, vsBaseUrlIndex: number, lastError?: unkno
     return;
   }
 
-  if (isMonacoRequire(globalThis.require)) {
+  if (isMonacoRequire(getGlobalRequire())) {
     configureLoader(attemptId, vsBaseUrl, true, (error) => loadMonaco(attemptId, vsBaseUrlIndex + 1, error));
     return;
   }
@@ -253,7 +259,7 @@ function configureLoader(
 ): void {
   if (attemptId !== initializationAttemptId) return;
 
-  const monacoRequire = globalThis.require;
+  const monacoRequire = getGlobalRequire();
   if (!isMonacoRequire(monacoRequire)) {
     retry(new Error('monaco loader was not initialized'));
     return;
