@@ -23,7 +23,7 @@
     "target": "ESNext",
     "types": ["node", "vitest/globals", "bun"]
   },
-  "exclude": ["test/e2e/next-app", "test/fixtures", "packages/*/test/fixtures"],
+  "exclude": ["test/fixtures", "test/e2e/next-app", "packages/*/test/fixtures"],
   "extends": [
     "@tsconfig/bun/tsconfig.json",
     "@tsconfig/node-lts/tsconfig.json",

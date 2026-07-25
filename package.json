@@ -38,6 +38,7 @@
     "lint-fix": "bun wb lint --fix",
     "prepare": "lefthook install || true",
     "test": "bun wb test",
+    "test/ci": "bun wb test-on-ci",
     "test/ci-setup": "playwright install chromium",
     "typecheck": "bun wb typecheck",
     "verify": "bun wb verify",
@@ -58,14 +59,14 @@
     "@types/react-dom": "19.2.3",
     "@willbooster/oxfmt-config": "1.2.2",
     "@willbooster/oxlint-config": "1.4.8",
-    "@willbooster/wb": "15.4.0",
-    "build-ts": "19.0.0",
+    "@willbooster/wb": "18.0.1",
+    "build-ts": "21.0.0",
     "conventional-changelog-conventionalcommits": "9.3.1",
     "jsdom": "29.0.2",
     "lefthook": "2.1.10",
     "next": "16.3.0-preview.6",
-    "oxfmt": "0.59.0",
-    "oxlint": "1.74.0",
+    "oxfmt": "0.60.0",
+    "oxlint": "1.75.0",
     "oxlint-tsgolint": "7.0.2001",
     "react": "19.2.5",
     "react-dom": "19.2.5",
@@ -78,6 +79,7 @@
     "node": ">=24"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
