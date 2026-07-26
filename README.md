@@ -59,6 +59,10 @@ This package tracks the latest maintained stack used by this repository:
 
 The `monaco-editor` peer dependency is pinned to the supported version so package managers surface unsupported upgrades.
 
+#### Upgrading to `monaco-editor` 0.56.0
+
+The default asset base URL now points at `monaco-editor` 0.56.0, so upgrading this package also upgrades the Monaco runtime your app loads. Review the [Monaco 0.56.0 breaking changes](https://github.com/microsoft/monaco-editor/blob/v0.56.0/CHANGELOG.md) before upgrading; most notably, `IOverlayWidgetPosition.stackOridinal` was renamed to `stackOrdinal`, and the deprecated `IMirrorModel` and `IWorkerContext` worker API types were removed. Pin the previous runtime with `loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs' } })` if you need to stay on 0.55.1.
+
 ### Introduction
 
 The library exports types and the utility called `loader`, the last one has two methods
