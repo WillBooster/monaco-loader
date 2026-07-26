@@ -11,8 +11,8 @@ export default function FallbackEditorAssetsProbe() {
     let active = true;
 
     loader.config({
-      paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs' },
-      fallbackPaths: [{ vs: 'https://unpkg.com/monaco-editor@0.55.1/min/vs' }],
+      paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs' },
+      fallbackPaths: [{ vs: 'https://unpkg.com/monaco-editor@0.56.0/min/vs' }],
     });
     loader
       .init()

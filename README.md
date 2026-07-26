@@ -54,7 +54,7 @@ NOTE: For TypeScript type definitions, this package uses the [monaco-editor](htt
 This package tracks the latest maintained stack used by this repository:
 
 - Node.js 24 or later
-- `monaco-editor` 0.55.1
+- `monaco-editor` 0.56.0
 - Next.js 16 with React 19 for the integration app
 
 The `monaco-editor` peer dependency is pinned to the supported version so package managers surface unsupported upgrades.
