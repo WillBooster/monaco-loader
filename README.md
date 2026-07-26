@@ -54,10 +54,14 @@ NOTE: For TypeScript type definitions, this package uses the [monaco-editor](htt
 This package tracks the latest maintained stack used by this repository:
 
 - Node.js 24 or later
-- `monaco-editor` 0.55.1
+- `monaco-editor` 0.56.0
 - Next.js 16 with React 19 for the integration app
 
 The `monaco-editor` peer dependency is pinned to the supported version so package managers surface unsupported upgrades.
+
+#### Upgrading to `monaco-editor` 0.56.0
+
+The default asset base URL now points at `monaco-editor` 0.56.0, so upgrading this package also upgrades the Monaco runtime your app loads. Review the [Monaco 0.56.0 breaking changes](https://github.com/microsoft/monaco-editor/blob/v0.56.0/CHANGELOG.md) before upgrading; most notably, `IOverlayWidgetPosition.stackOridinal` was renamed to `stackOrdinal`. To stay on 0.55.1, pin both the runtime assets and the type definitions: configure `loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs' } })` and keep `monaco-editor` 0.55.1 installed (e.g. via your package manager's override or resolution field), since this package's own `monaco-editor` dependency is pinned to 0.56.0.
 
 ### Introduction
 

@@ -44,7 +44,7 @@
     "verify-full": "bun wb verify --full"
   },
   "dependencies": {
-    "monaco-editor": "0.55.1"
+    "monaco-editor": "0.56.0"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",

@@ -37,7 +37,7 @@ test('falls back to the next Monaco asset base URL when the primary loader scrip
 
 test('falls back when the primary Monaco editor module fails after loader.js initializes', async ({ page }) => {
   const errors: string[] = [];
-  const primaryEditorMainUrl = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/editor/editor.main.js';
+  const primaryEditorMainUrl = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.56.0/min/vs/editor/editor.main.js';
   const fallbackRequests: string[] = [];
 
   page.on('pageerror', (error) => errors.push(error.message));
@@ -48,7 +48,7 @@ test('falls back when the primary Monaco editor module fails after loader.js ini
       body: '/* primary editor.main unavailable */',
     })
   );
-  await page.route('https://unpkg.com/monaco-editor@0.55.1/min/vs/**', async (route, request) => {
+  await page.route('https://unpkg.com/monaco-editor@0.56.0/min/vs/**', async (route, request) => {
     const assetPath = decodeURIComponent(new URL(request.url()).pathname.split('/min/vs/')[1]!);
     const body = await readFile(path.join(packageRoot, 'node_modules/monaco-editor/min/vs', assetPath));
     await route.fulfill({
@@ -59,7 +59,7 @@ test('falls back when the primary Monaco editor module fails after loader.js ini
   });
   page.on('request', (request) => {
     const url = request.url();
-    if (url.startsWith('https://unpkg.com/monaco-editor@0.55.1/min/vs/')) {
+    if (url.startsWith('https://unpkg.com/monaco-editor@0.56.0/min/vs/')) {
       fallbackRequests.push(url);
     }
   });
