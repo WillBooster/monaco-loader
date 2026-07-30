@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import loader from '../src/index.js';
-import type { LoaderConfig, Monaco } from '../src/index.js';
+import loader from '../../src/index.js';
+import type { LoaderConfig, Monaco } from '../../src/index.js';
 
 // The global `require` is typed as NodeRequire/Require by @types/node/@types/bun, so assign the
 // Monaco AMD require mock through an opaque cast rather than fighting that ambient type.
@@ -24,7 +24,7 @@ const monaco = {
 
 async function importFreshLoader(): Promise<typeof loader> {
   vi.resetModules();
-  const module = await import('../src/index.js');
+  const module = await import('../../src/index.js');
   return module.default;
 }
 
