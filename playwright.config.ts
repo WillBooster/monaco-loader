@@ -22,7 +22,6 @@ export default defineConfig({
     trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
   },
   webServer: {
-    // Playwright owns the fixture lifecycle because wb has no test server for libraries.
     command: `bun run build && bun run next build test/e2e/next-app && bun run next start test/e2e/next-app --hostname 127.0.0.1 --port ${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,
