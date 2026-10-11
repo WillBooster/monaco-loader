@@ -30,5 +30,5 @@
     "@tsconfig/node-ts/tsconfig.json",
     "@tsconfig/node24/tsconfig.json"
   ],
-  "include": ["*.config.ts", "scripts/**/*", "src/**/*", "test/**/*"]
+  "include": ["*.config.mts", "*.config.ts", "scripts/**/*", "src/**/*", "test/**/*"]
 }
