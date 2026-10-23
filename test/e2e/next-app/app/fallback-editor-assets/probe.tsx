@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import loader from '@willbooster/monaco-loader';
+import { useEffect, useState } from 'react';
 
 export default function FallbackEditorAssetsProbe() {
   const [status, setStatus] = useState('fallback-editor-assets-pending');
