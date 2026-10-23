@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 import loader, { type Monaco } from '@willbooster/monaco-loader';
+import { useEffect, useState } from 'react';
 
 const monaco = {
   editor: {
